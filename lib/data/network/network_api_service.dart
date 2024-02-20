@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart';
 import 'package:mvvm_flutter/data/app_exception.dart';
 import 'package:mvvm_flutter/data/network/base_api_service.dart';
@@ -37,14 +38,23 @@ class NetworkApiService extends BaseApiService {
     return responseJson;
   }
 
-  dynamic returnResponse(http.Response response) {
-    switch (response.statusCode) {
+  dynamic returnResponse (http.Response response){
+    if (kDebugMode) {
+      print(response.statusCode);
+    }
+
+    switch(response.statusCode){
       case 200:
         dynamic responseJson = jsonDecode(response.body);
-        return responseJson;
+        return responseJson ;
+      case 400:
+        throw BadRequestException(response.body.toString());
+      case 500:
+      case 404:
+        throw UnauthorizedException(response.body.toString());
       default:
-        throw FetchDataException(
-            'Error occured while communicating with server with status code ${response.statusCode}');
+        throw FetchDataException('Error occured while communicating with server');
+
     }
   }
 }
