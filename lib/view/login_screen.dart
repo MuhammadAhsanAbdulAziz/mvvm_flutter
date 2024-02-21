@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:mvvm_flutter/model/user_request.dart';
+import 'package:mvvm_flutter/model/user_response.dart';
 import 'package:mvvm_flutter/res/components/round_button.dart';
+import 'package:mvvm_flutter/utils/routes/routes_name.dart';
 import 'package:mvvm_flutter/utils/utils.dart';
 import 'package:mvvm_flutter/view_model/auth_view_model.dart';
+import 'package:mvvm_flutter/view_model/user_view_model.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -19,6 +23,20 @@ class _LoginScreenState extends State<LoginScreen> {
   FocusNode _emailFocus = FocusNode();
   FocusNode _passwordFocus = FocusNode();
 
+  void checkUser() async {
+    UserResponse user = await UserViewModel().getUser();
+    if (user.token != 'null') {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        RoutesName.home,
+        (route) {
+          return false;
+        },
+      );
+    }
+    print(user.token);
+  }
+
   @override
   void dispose() {
     super.dispose();
@@ -30,7 +48,13 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    checkUser();
     final height = MediaQuery.of(context).size.height * 1;
     final authViewModel = Provider.of<AuthViewModel>(context);
     void _submit() {
@@ -47,11 +71,11 @@ class _LoginScreenState extends State<LoginScreen> {
             'Password should be greater than 6', context);
         return;
       }
-      Map data = {
-        'email': _emailController.text.trim(),
-        'password': _passwordController.text.trim(),
-      };
-      authViewModel.loginApi(data, context);
+      authViewModel.loginApi(
+          UserRequest(
+              email: _emailController.text.trim(),
+              password: _passwordController.text.trim()),
+          context);
     }
 
     return Scaffold(
